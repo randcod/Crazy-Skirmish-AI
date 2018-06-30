@@ -1,5 +1,9 @@
 # Skirmish Pro
-New AI Mod for Warhammer 40 000: Dawn of War - Soulstorm based on Dawn Of Skirmish SS
+New AI Mod for Warhammer 40 000: Dawn of War - Soulstorm based on Dawn Of Skirmish SS.
+
+Please note, the main goal of this AI is to improve its game level, so that AI can be a worthy opponent to strong players. 
+Functions like dancing, harrasing etc will be enabled by default and you cannot disable them!
+This AI made for work only with "Insane" level of complexity. The remaining levels have not been tested and their work is not guaranteed!
 
 ### Developers of the original Skrimish AI
 
