@@ -3,36 +3,36 @@ Reborning Legendary Dawn of Skirmish
 
 ### Developers of the original Skrimish AI
 
--Thudo (Thudmeizer)..>> Team Lead/Coder/Gfx/Bonafied Cheerleader
+- Thudo (Thudmeizer)..>> Team Lead/Coder/Gfx/Bonafied Cheerleader
 
--ArkhanTheBlack......>> Lead Coder/Scripter
+- ArkhanTheBlack......>> Lead Coder/Scripter
 
--LarkinVB............>> Lead Coder/Scripter/Beta Tester
+- LarkinVB............>> Lead Coder/Scripter/Beta Tester
 
--Cultist.............>> Additional Heroes Special optimizations 
+- Cultist.............>> Additional Heroes Special optimizations 
 
--Corsix..............>> Coding assistance
+- Corsix..............>> Coding assistance
 
--Dark40K.............>> Coding assistance
+- Dark40K.............>> Coding assistance
 
--Zenoth..............>> Beta Tester
+- Zenoth..............>> Beta Tester
 
--Inquisitor..........>> Beta Tester/Assistance with camera mod
+- Inquisitor..........>> Beta Tester/Assistance with camera mod
 
--Troubadour..........>> Beta Tester
+- Troubadour..........>> Beta Tester
 
--Smokeskin...........>> Beta Tester
+- Smokeskin...........>> Beta Tester
 
--Dreddnott...........>> Beta Tester
+- Dreddnott...........>> Beta Tester
 
--ThetaOrion..........>> Beta Tester
+- ThetaOrion..........>> Beta Tester
 
--Malkor..............>> Beta Tester
+- Malkor..............>> Beta Tester
 
--FinalDeath..........>> Beta Tester
+- FinalDeath..........>> Beta Tester
 
--QuietDeath..........>> Beta Tester
+- QuietDeath..........>> Beta Tester
 
--JBird...............>> Beta Tester
+- JBird...............>> Beta Tester
 
--Slash...............>> Beta Tester 
+- Slash...............>> Beta Tester 
