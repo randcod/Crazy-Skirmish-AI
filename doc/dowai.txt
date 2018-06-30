@@ -1,11 +1,3 @@
-1.) Dancing
-~~~~~~~~~~~
-Dancing is the ability to run away with ranged units if they are attacked in melee.
-There are three possible settings:
-a) Off		=>	Dancing is not used at all
-b) Standard	=>	The AI is restricted to only dance with one unit at a time
-c) Godlike	=>	The AI will dance with several units at a time if necessary
-
 2.) Attack Delay
 ~~~~~~~~~~~~~~~~
 This forces the AI to wait with an attack until a specif time has passed.
@@ -102,4 +94,3 @@ Known Issues
 o Maps with limited Startpoint build space (ie. 4p_Biffys Peril) *may* still cause the AI to clutter buildings together thus disallowing some vehicles and even uber-units through. This will be rectified in subsequent releases.
 
 o Maps with limited check/strategy points where income gathering is somewhat low (ie. 8p_Penal Colony), the AI tends to struggle a little more than usual. Until we can determine a means to dynamically-change the AI's resource plans, it will flounder a little more than normal compared to maps with prolific resource points.
-
