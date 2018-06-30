@@ -1,5 +1,5 @@
-# SkirmishReborn
-Reborning Legendary Dawn of Skirmish
+# Skirmish Pro
+New AI Mod for Warhammer 40 000: Dawn of War - Soulstorm based on Dawn Of Skirmish SS
 
 ### Developers of the original Skrimish AI
 
