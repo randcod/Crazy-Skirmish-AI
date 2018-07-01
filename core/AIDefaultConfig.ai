@@ -7,7 +7,6 @@ AISettings_Easy =
 	bAlternativeStrategies = false,
 	bHarassing = false,
 	bMultiBuildings = false,
-	bRelicUnits = false,
 	bTurrets = false,
 	bMines = false,
 }
@@ -20,7 +19,6 @@ AISettings_Standard =
 	bAlternativeStrategies = true,
 	bHarassing = false,
 	bMultiBuildings = true,
-	bRelicUnits = true,
 	bTurrets = true,
 	bMines = true,
 }
@@ -33,7 +31,6 @@ AISettings_Hard =
 	bAlternativeStrategies = true,
 	bHarassing = true,
 	bMultiBuildings = true,
-	bRelicUnits = true,
 	bTurrets = true,
 	bMines = true,
 }
@@ -46,7 +43,6 @@ AISettings_Harder =
 	bAlternativeStrategies = true,
 	bHarassing = true,
 	bMultiBuildings = true,
-	bRelicUnits = true,
 	bTurrets = true,
 	bMines = false,
 }
@@ -59,7 +55,6 @@ AISettings_Insane =
 	bAlternativeStrategies = true,
 	bHarassing = true,
 	bMultiBuildings = true,
-	bRelicUnits = true,
 	bTurrets = true,
 	bMines = false,
 }
