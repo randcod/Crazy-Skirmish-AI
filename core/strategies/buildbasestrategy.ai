@@ -309,11 +309,6 @@ end
 -- Arkhan 03.2006: Check stance
 function BuildBaseStrategy:CheckStance()
 
-	-- Check if we've an attack delay
-	if (g_iGMT < CpuManager.AISettings.iAttackDelay * 60) then
-		return "Defensive"
-	end
-
 	-- If I'm being attacked, then defend my base
 	if (cpu_manager:GetCriticalSituation() > 0 or cpu_manager:GetCriticalThreat() > 500) then
 		return "Defensive"

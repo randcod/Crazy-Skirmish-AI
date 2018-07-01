@@ -17,7 +17,6 @@ AttackStrategy.iNearRange			= 70
 AttackStrategy.iMidRange			= 120
 AttackStrategy.iLongRange			= 180
 AttackStrategy.iUnitAveragePower	= 250
-AttackStrategy.iAttackDelayTime 	= 20		-- Minimum time an attack has to be computed (In seconds)
 AttackStrategy.iCriticalAttackTime 	= 180		-- If countdown started, the AI will wait this time until it tries to stop it (In seconds)
 AttackStrategy.fAttackDeviation 	= 1 / 5		-- Used for checking if an attack target is blocked by a base, post or army
 AttackStrategy.bCounterVO			= false
@@ -27,12 +26,12 @@ function AttackStrategy:__init( info ) super( info )
 
 	-- Init member variables
 	self.m_oEnemy = nil
-	self.m_vAttackPosition = Vector3f(0, 0, 0)	
+	self.m_vAttackPosition = Vector3f(0, 0, 0)
     self.m_oAttackPlan = nil
     self.m_bHelpFriend = false
     self.m_iMyself = 0
     self.m_iNextUpdate = 0
-    
+
     -- PlayerInfo arrays
 	self.m_aAllies	= {}
 	self.m_aEnemies	= {}
@@ -48,19 +47,19 @@ function AttackStrategy:Update()
 	Strategy.Update(self)
 
 	-- Check last update
-	if (g_iGMT < self.m_iNextUpdate or g_iGMT < CpuManager.AISettings.iAttackDelay * 60) then
+	if (g_iGMT < self.m_iNextUpdate) then
 		return
 	end
 	self.m_iNextUpdate = g_iGMT + 10
-	
+
 	aitrace("AttackStrategy: Update...", true)
-	
+
 	-- Update countdown for critical points
 	self:UpdateStrategicObjective()
-		
+
 	-- If no attack plan exists, try to add a new one
 	if (self.m_oAttackPlan == nil) then
-	
+
 		-- Check attack delay time
 		if (not DefendStrategy.bDefending or cpu_manager:GetArmyStrength() > 4000) then
 			self:ChooseTarget()
@@ -68,45 +67,45 @@ function AttackStrategy:Update()
 	elseif (self.m_oAttackPlan:IsComplete()) then
 		self:ResetAttack()
 	end
-	
+
 	-- Make sure that we have an attack plan
 	if (self.m_oAttackPlan ~= nil and not AttackStrategy.bCounterVO) then
-	
+
 	    -- Retreat, if there's a big threat at my HQ
 	    local iMinThreat = cpu_manager:GetTierLevel() * 400
 	    if (cpu_manager:GetCriticalThreat() > iMinThreat and cpu_manager:GetCriticalSituation() > 0) then
-		   
+
 			-- Move all my dudes to home base position
 			aitrace("AttackStrategy: Retreat!!! HQ under threat.")
 			self:Retreat(vBasePos)
 	    end
 	end
-	
+
 	-- Make sure that we have an attack plan
 	if (self.m_oAttackPlan ~= nil and not AttackStrategy.bCounterVO) then
-	
+
 		-- Check if we should abort the attack to save an ally
 		self:HelpAllyInNeed()
 	end
-    
+
 	-- Make sure that we have an attack plan
 	if (self.m_oAttackPlan ~= nil and not AttackStrategy.bCounterVO) then
-	
+
 	    -- Check if we should abort the attack and retreat
 	    if (not self:CheckAttackSituation()) then
-	    		    
+
 	   		-- Move all my dudes to closest base
 	   		aitrace("AttackStrategy: Retreat!!! Situation is too dangerous.")
 			self:Retreat(nil)
 		end
 	end
-	
+
 	-- Make sure that we have an attack plan
 	if (self.m_oAttackPlan ~= nil and not AttackStrategy.bCounterVO) then
-	
+
 		-- Check if the attack was successfull
 		if (self:CheckSuccess()) then
-		
+
 			-- I'm done. (FIXME: should be success)
 			aitrace("AttackStrategy: Mission accomplished!!!")
 			self:ResetAttack()
@@ -116,9 +115,9 @@ function AttackStrategy:Update()
 end
 
 function AttackStrategy:UpdateStrategicObjective()
-	
+
 	aitrace("AttackStrategy: Update strategic objective...")
-	
+
 	-- Check if countdown is active
 	if (cpu_manager.m_iCriticalTimer < 0) then
 
@@ -129,30 +128,30 @@ function AttackStrategy:UpdateStrategicObjective()
 		end
 		return
 	end
-	
+
 	-- Check if it is time to stop the timer
 	if (g_iGMT < cpu_manager.m_iCriticalTimer + AttackStrategy.iCriticalAttackTime or not cpu_manager.m_bTakeAndHoldMode) then
 		return
 	end
-	
+
 	-- Get all critical points, owned by enemies
 	local vEnemyCriticalPositions = {}
 	local oCriticalOwner = {}
 	for oStrategicPoint in resource_manager:GetStrategicPointAIs() do
-	
+
 		-- Check if strategic point is a critical
 		if (oStrategicPoint:IsStrategicObjective()) then
-		
+
 			-- Check if critical point has an owner
 			local iIDOwner = oStrategicPoint:Owner()
 			if (iIDOwner > 0) then
-								
+
 				-- Get owner of the critical point
 				for oPlayer in cpu_manager.stats:GetPlayerStats() do
 
 					-- Check if player is the owner of the critical point
 					if (iIDOwner == oPlayer:GetPlayerID()) then
-					
+
 						-- Check if the owner is an enemy
 						if (cpu_manager.player_stats:IsEnemy(oPlayer)) then
 							table.insert(vEnemyCriticalPositions, oStrategicPoint:GetEntity():GetPosition())
@@ -163,10 +162,10 @@ function AttackStrategy:UpdateStrategicObjective()
 			end
 		end
 	end
-	
+
 	-- Leave if there's already an attack on a critical point
 	if (AttackStrategy.bCounterVO) then
-	
+
 		-- Check if we already conquered the critical but there's still another one
 		for iLoop1 in vEnemyCriticalPositions do
 			if (distance_sqr(self.m_vAttackPosition, vEnemyCriticalPositions[iLoop1]) < 1) then
@@ -175,16 +174,16 @@ function AttackStrategy:UpdateStrategicObjective()
 		end
 		aitrace("Target critical captured! Others remain...")
 	end
-					
+
 	-- Init attack on critical point closest to my base
 	local iDistanceToCritical = 0
 	local vAttackPos = Vector3f()
 	local oEnemy = nil
 	for iLoop1 in vEnemyCriticalPositions do
-	
+
 		-- Check distance from start pos to critical point
 		local iDistance = distance_sqr(cpu_manager.start_pos, vEnemyCriticalPositions[iLoop1])
-		
+
 		-- If distance is lesser than previous critical, then take this one
 		if (iDistanceToCritical == 0 or iDistance < iDistanceToCritical) then
 			vAttackPos = vEnemyCriticalPositions[iLoop1]
@@ -192,20 +191,20 @@ function AttackStrategy:UpdateStrategicObjective()
 			iDistanceToCritical = iDistance
 		end
 	end
-	
+
 	-- Leave if no point was found (Should never happen)
 	if (oEnemy == nil) then
 		return
 	end
-	
+
 	-- Reset attack
 	self:ResetAttack()
-	
+
 	-- Init new attack
 	self.m_vAttackPosition = vAttackPos
 	self.m_oEnemy = oEnemy
 	AttackStrategy.bCounterVO = true
-	
+
 	-- Make sure that all troops from other plans are unlocked (We need them!)
 	cpu_manager:ForceReleaseDefenders()
 
@@ -226,14 +225,14 @@ function AttackStrategy:ResetAttack()
 	if (self.m_oAttackPlan ~= nil) then
 		self.m_oAttackPlan:SetComplete(true)
 	end
-	
+
 	-- Reset attack stats
 	self.m_oEnemy = nil
 	self.m_vAttackPosition = Vector3f(0, 0, 0)
     self.m_oAttackPlan = nil
     self.m_bHelpFriend = false
     AttackStrategy.bCounterVO = false
-    
+
     -- Release all
     self:ForceReleaseAll()
 end
@@ -258,72 +257,72 @@ function AttackStrategy:CheckAttackSituation()
     elseif (iMyArmyStrength > 2000) then
     	return true
     end
-    
+
 	-- Compare army strengths
     local iEnemyArmyStrength = cpu_manager:GetArmyStrength(self.m_oEnemy)
     local fRatio = cpu_manager:GetRetreatRatio()
     if (iMyArmyStrength < fRatio * iEnemyArmyStrength) then
     	return false
     end
-    
+
 	-- Check threat at attack position
 	local iEnemyPower, iAlliedPower, iMyPower = cpu_manager:GetArmyStrengthAtPos(self.m_vAttackPosition, 50)
 	local iEnemyThreat = iEnemyPower - iAlliedPower + iMyPower
 	if (iMyArmyStrength < fRatio * iEnemyThreat) then
 		return false
 	end
-	
+
 	-- Create array of attacking units
 	local aUnits = {}
 	for iLoop1 in self.m_oAttackPlan.attack_units do
-	
+
 		-- Get unit
 		local oUnit = self.m_oAttackPlan.attack_units[iLoop1]
-		
+
 		-- Check if unit is valid
 		if (oUnit:IsValid() and (oUnit:WasRecentlyHurt() or oUnit:IsInCombat())) then
-		
+
 			-- Store unit data
 			table.insert(aUnits, { oUnit:GetPosition(), 3 * oUnit:GetTactic():GetUnitStrength() })
 		end
 	end
-	
+
 	-- Check if we've units in contact with the enemy
 	local iTotalDefendStrength = 0
 	if (table.getn(aUnits) > 0) then
-	
+
 		-- Check, which enemy units and buildings are in contact with our units
 		local iRange = sqr(35)
 		for oPlayer in cpu_manager.stats:GetPlayerStats() do
-		
+
 			-- Check only enemies
 			if (cpu_manager.player_stats:IsEnemy(oPlayer) and not oPlayer:IsPlayerDead()) then
-		
+
 				-- Compute all player squads
 				for oSquad in oPlayer:GetSquads() do
-					
+
 					-- Check if unit is valid
 					if (oSquad:IsValid() and not oSquad:IsEngineer()) then
-					
+
 						-- Get squad position
 						local vSquadPosition = oSquad:GetPosition()
-						
+
 						-- Get squad power
 						local iSquadPower = cpu_manager:GetUnitStrength(oSquad)
-						
+
 						-- Add the strenth of enemy units to total defend strength if they are close to one of our attack units
 						local iSquadCount = table.getn( aUnits )
 						for iLoop1 = iSquadCount, 1, -1 do
-						
+
 							-- Check distance
 							if (distance_sqr(aUnits[iLoop1][1], vSquadPosition) < iRange) then
-								
+
 								-- Add unit strength to total defend strength
 								iTotalDefendStrength = iTotalDefendStrength + iSquadPower
-								
+
 								-- Substract unit strength from squad defend strength capacity
 								aUnits[iLoop1][2] = aUnits[iLoop1][2] - iSquadPower
-								
+
 								-- Check if squad defend strength exceeds limit
 								if (aUnits[iLoop1][2] < 0) then
 									table.remove(aUnits, iLoop1)
@@ -333,15 +332,15 @@ function AttackStrategy:CheckAttackSituation()
 						end
 					end
 				end
-				
+
 				-- Compute all player turrets
 				local sRace = oPlayer:GetPlayerRaceName()
 				local iPostThreat = cpu_manager:GetTurretPower(sRace)
 				for oBuilding in oPlayer:GetBases() do
-		  
+
 		  			-- Check for valid building
 					if (oBuilding:IsValid() and oBuilding:HasGuns()) then
-					
+
 						-- Check for upgraded posts and armed buildings
 						local iThreat = 0
 						if (oBuilding:IsListeningPost()) then
@@ -351,26 +350,26 @@ function AttackStrategy:CheckAttackSituation()
 							local sBuildingType, iBuildingThreat = cpu_manager.m_oRaceLoader:GetBuildingType(sRace, sBuildingName)
 							iThreat = iBuildingThreat
 						end
-						
+
 						-- Check if threat is in range of one of our units
 						if (iThreat > 0) then
-									
+
 							-- Get turret position
 							local vTurretPosition = oBuilding:GetPosition()
-											
+
 							-- Add the strenth of enemy turrets to total defend strength if they are close to one of our attack units
 							local iSquadCount = table.getn( aUnits )
 							for iLoop1 = iSquadCount, 1, -1 do
-							
+
 								-- Check distance
 								if (distance_sqr(aUnits[iLoop1][1], vTurretPosition) < iRange) then
-									
+
 									-- Add turret strength to total defend strength
 									iTotalDefendStrength = iTotalDefendStrength + iThreat
-									
+
 									-- Substract turret strength from squad defend strength capacity
 									aUnits[iLoop1][2] = aUnits[iLoop1][2] - iThreat
-									
+
 									-- Check if squad defend strength exceeds limit
 									if (aUnits[iLoop1][2] < 0) then
 										table.remove(aUnits, iLoop1)
@@ -405,31 +404,31 @@ function AttackStrategy:CheckSuccess()
 	if (cpu_manager.terrain_analyzer:HasThreat(self.m_vAttackPosition, AttackStrategy.iLocalRange)) then
 		return false
 	end
-	
+
 	-- Check enemy buildings
 	if (cpu_manager.cpu_player:FindFirstBaseEnemy(self.m_vAttackPosition, AttackStrategy.iLocalRange, 1) ~= nil) then
 		return false
 	end
-	
+
 	-- Check for strats to disown
 	local oStrategicPoint = resource_manager:FindFirstStrategicPoint(self.m_vAttackPosition, AttackStrategy.iLocalRange)
 	if (oStrategicPoint ~= nil) then
-	
+
 		-- Check owner
 		local iOwnerID = oStrategicPoint:Owner()
 		if (iOwnerID ~= 0 and not cpu_manager:IsFriendly(iOwnerID)) then
 			return false
 		end
 	end
-	
+
 	-- Attack was successfull! Now try to initiate an attack chain.
 	local iClosestDistance = 100
 	local vNewAttackPosition = nil
 	for oBuilding in self.m_oEnemy:GetBases() do
-	
+
 		-- Check for valid building
 		if (oBuilding:IsValid()) then
-					
+
 			-- Check distance for attack chain
 			local vPosition = oBuilding:GetPosition()
 			local iDistance = cpu_manager:GetShortestPathingDistance(self.m_vAttackPosition, vPosition)
@@ -439,15 +438,15 @@ function AttackStrategy:CheckSuccess()
 			end
 		end
 	end
-	
+
 	-- Check if we found a new attack position
 	if (vNewAttackPosition ~= nil) then
-		
+
 		-- Check threat at position
 		local iEnemyStrength, iAlliedStrength = cpu_manager:GetArmyStrengthAtPos(vNewAttackPosition, 50, true)
 		local iMyArmyStrength = self.m_oAttackPlan:GetArmyStrength()
 		if (3 * iEnemyStrength < 2 * (iAlliedStrength + iMyArmyStrength)) then
-			
+
 			-- Initiate attack chain
 			aitrace("AttackStrategy: Attack successfull!!! Switch target...")
 			self.m_vAttackPosition = vNewAttackPosition
@@ -455,7 +454,7 @@ function AttackStrategy:CheckSuccess()
 			return false
 		end
 	end
-	
+
 	-- Attack was successfull
 	return true
 end
@@ -472,46 +471,46 @@ function AttackStrategy:HelpAllyInNeed()
 	-- Get army strengths
 	local iMyArmyStrength = cpu_manager:GetArmyStrength()
 	local iEnemyArmyStrength = cpu_manager:GetArmyStrength(self.m_oEnemy)
-	
+
 	-- Get race specific support factor
 	local fSupportFactor = cpu_manager:GetSupportAllyFactor()
-	
+
 	-- Get allied start positions
 	local aAlliedStartPositions = {}
 	for oPlayer in cpu_manager.stats:GetPlayerStats() do
-	
+
 		-- Check player status
 		if (not oPlayer:IsPlayerDead() and not cpu_manager.player_stats:IsEnemy(oPlayer) and
 			oPlayer:GetPlayerID() ~= cpu_manager.player_id) then
-			
+
 			-- Add start position
 			table.insert(aAlliedStartPositions, oPlayer:GetStartingPosition())
-		end		
+		end
 	end
-	
+
 	-- Check if adjacent ally is in urgent need
 	local vSupportPosition = nil
 	local iCriticalRange = cpu_manager:GetCriticalRange()
 	local iMinThreat = cpu_manager:GetTierLevel() * 400
 	for oPlayer in cpu_manager.stats:GetPlayerStats() do
-	
+
 		-- Check player status
 		if (not oPlayer:IsPlayerDead() and not cpu_manager.player_stats:IsEnemy(oPlayer) and
 			oPlayer:GetPlayerID() ~= cpu_manager.player_id) then
-			
+
 			-- Check distance
 			local vStartPosition = oPlayer:GetStartingPosition()
 			local iDistance = cpu_manager:GetShortestPathingDistance(cpu_manager.start_pos, vStartPosition)
 			local bClosestAlly = true
 			for iLoop1 in aAlliedStartPositions do
-			
+
 				-- Check allied distance
 				if (distance_sqr(aAlliedStartPositions[iLoop1], vStartPosition) > 1 and
 					cpu_manager:GetShortestPathingDistance(aAlliedStartPositions[iLoop1], vStartPosition) < iDistance) then
 					bClosestAlly = false
 				end
 			end
-			
+
 			-- Check only if we are the closest ally
 			if (bClosestAlly and cpu_manager.terrain_analyzer:HasThreat(vStartPosition, iCriticalRange)) then
 
@@ -524,16 +523,16 @@ function AttackStrategy:HelpAllyInNeed()
 				local iEnemyStrength, iAlliedStrength = cpu_manager:GetArmyStrengthAtPos(vStartPosition, iCriticalRange)
 				local fModifier = math.max(1, iDistance / 100) / fSupportFactor
 				if (iEnemyStrength > iMinThreat and iDistance < 450 and fModifier * iAlliedStrength < iEnemyStrength) then
-				
+
 					-- Help ally if the enemy we're attacking is not very weak compared to me
 					if (fModifier * iMyArmyStrength < 4 * iEnemyArmyStrength) then
-					
+
 						-- Check if we should abort our attack
 						if (iMyArmyStrength < 5000) then
 							vSupportPosition = self:GetBestSupportPosition(vStartPosition, iCriticalRange + 50)
 							break
 						else
-						
+
 							-- Check if we should split our forces
 							local iAttackStrength = self.m_oAttackPlan:GetArmyStrength()
 							if (iAttackStrength > iMyArmyStrength / 2 + 500) then
@@ -546,21 +545,21 @@ function AttackStrategy:HelpAllyInNeed()
 			end
 		end
 	end
-	
+
 	-- Leave if we are not going to support an ally
 	if (vSupportPosition == nil) then
 		return
 	end
-	
+
 	-- Reset attack
 	self:ResetAttack()
-	
+
 	-- Create a new attack plan to assist ally
 	iRequiredPower = math.max(cpu_manager:GetArmyStrength() * 2 / 3, 400)
 	self.m_vAttackPosition = Vector3f(vSupportPosition)
 	self.m_oEnemy = cpu_manager:FindCommonEnemyPlayer()
 	self.m_bHelpFriend = true
-	
+
 	-- Set minimum amount of units
 	local iMinArmyPower = math.max(self.info.MinArmyStrength, cpu_manager:GetTierLevel() * cpu_manager:MinArmyStrengthPerTier())
 	iMinArmyPower = math.max(iMinArmyPower, iRequiredPower)
@@ -574,37 +573,37 @@ end
 function AttackStrategy:ChooseTarget()
 
 	aitrace("AttackStrategy: Choose new target...")
-	
+
 	-- Reset attack
 	self:ResetAttack()
-	
+
     -- Don't choose new target if there's a big threat at the HQ
     if (cpu_manager:GetCriticalSituation() > 0) then
     	aitrace("AttackStrategy: Too dangerous to attack...")
     	return
     end
-    
+
 	-- Get info about all units available for attack
 	local iMyArmyStrength = 0
 	local iSquadCount = 0
 	local bBaseBuster = false
 	for oSquad in military_manager:GetUnlockedSquads() do
-	   
+
 		-- Check if squad is valid
 		if (oSquad:IsValid()) then
 
 			-- Check if squad is able to attack
 			local oTactic = oSquad:GetTactic()
 			if (not oSquad:IsEngineer() and oTactic:IsAttacker()) then
-			
+
 				-- Add squad strength to army strength
 				iMyArmyStrength = iMyArmyStrength + oSquad:GetTactic():GetUnitStrength()
 				iSquadCount = iSquadCount + 1
-				
+
 				-- Check for a commander or vehicle
 				local oStats = oSquad:GetStats()
 				if (oStats ~= nil) then
-					
+
 					-- Check armour class
 					local eClass = oStats:GetClass()
 					if (eClass == UnitStatsAI.UC_VehicleLow or eClass == UnitStatsAI.UC_VehicleMed or
@@ -615,7 +614,7 @@ function AttackStrategy:ChooseTarget()
 			end
 		end
 	end
-	
+
 	-- Don't attack if I don't have enough units available
 	local iMinArmyPower = math.max(self.info.MinArmyStrength, cpu_manager:GetTierLevel() * cpu_manager:MinArmyStrengthPerTier())
 	if (iMyArmyStrength < iMinArmyPower or iSquadCount < 2 or not bBaseBuster) then
@@ -624,7 +623,7 @@ function AttackStrategy:ChooseTarget()
 
 	-- Analyse the battle field
 	self:AnalyseBattleField()
-	
+
 	--	Trace info (Only for debug purposes)
 	--	for iLoop1 in self.m_aAllies do
 	--		self.m_aAllies[iLoop1]:TraceInfo()
@@ -632,23 +631,23 @@ function AttackStrategy:ChooseTarget()
 	--	for iLoop1 in self.m_aEnemies do
 	--		self.m_aEnemies[iLoop1]:TraceInfo()
 	--	end
-	
+
 	-- Get info about myself
 	local vMyArmyPosition	= self.m_aAllies[self.m_iMyself].vArmyPosition
 	local vMyBasePosition	= self.m_aAllies[self.m_iMyself].Base.vPosition
 	local sMyRace			= self.m_aAllies[self.m_iMyself].sRace
 	local fMinEnemyBaseDist = 0
-	
+
 	-- Set force attack factor
 	local iForceAttackStrength = cpu_manager:GetTierLevel() * cpu_manager:MinArmyStrengthPerTier() * 2
-	
+
 	-- Get closest enemy post
 	local iClosestEnemyDistance = 10000
 	for oStrategicPoint in resource_manager:GetStrategicPointAIs() do
-	
+
 		-- Check owner
 		if (oStrategicPoint:HasListeningPost() and not cpu_manager:IsFriendly(oStrategicPoint:Owner())) then
-			
+
 			-- Check distance
 			local iDistance = cpu_manager:GetShortestPathingDistance(cpu_manager.start_pos, oStrategicPoint:GetPosition())
 			if (iDistance < iClosestEnemyDistance) then
@@ -657,20 +656,20 @@ function AttackStrategy:ChooseTarget()
 		end
 	end
 	iThreatRange = sqr(2 / 3 * iClosestEnemyDistance)
-	
+
 	-- Compare army strength with closest enemy army
 	local iEnemyArmyStrength = 0
 	local iClosestDistance = 0
 	for iLoop1 in self.m_aEnemies do
-	
+
 		-- Check if enemy is alive
 		if (not self.m_aEnemies[iLoop1].bDead) then
-			
+
 			-- Check distance
 			local iDistanceToMyBase = distance_sqr(self.m_aEnemies[iLoop1].vArmyPosition, vMyBasePosition)
 			if (iClosestDistance == 0 or iClosestDistance > iDistanceToMyBase) then
 				iEnemyArmyStrength = self.m_aEnemies[iLoop1].iTotalArmyStrength
-				
+
 				-- Half enemy army strength if it's very far away
 				local iDistanceToEnemyBase = distance_sqr(self.m_aEnemies[iLoop1].vArmyPosition, self.m_aEnemies[iLoop1].Base.vPosition)
 				if (iDistanceToMyBase > iThreatRange and iDistanceToEnemyBase > iThreatRange) then
@@ -683,7 +682,7 @@ function AttackStrategy:ChooseTarget()
     if (iMyArmyStrength < fRatio * iEnemyArmyStrength and iMyArmyStrength < 2500) then
     	return
     end
-	
+
 	-- ****** Check for an enemy base I can handle *****
 	local tBestBase =
 	{
@@ -693,47 +692,47 @@ function AttackStrategy:ChooseTarget()
 		iNeedPower = 0
 	}
 	for iLoop1 in self.m_aEnemies do
-	
+
 		-- Check if I can handle enemy
 		if (not self.m_aEnemies[iLoop1].bDead and 4 * iMyArmyStrength > 3 * self.m_aEnemies[iLoop1].iTotalArmyStrength) then
-	
+
 			-- Value points
 			local iPoints = 0
-		
+
 			-- Get the maximum enemy threat on the path to the target base
 			local vBasePosition = self.m_aEnemies[iLoop1].Base.vPosition
 			local iEnemyPower = self.m_aEnemies[iLoop1].Base.iAlliedLocalPower + self.m_aEnemies[iLoop1].Base.iAlliedNearPower / 2
 			iEnemyPower = self:GetMaxThreatOnPath(vMyArmyPosition, vBasePosition, iEnemyPower)
-			
+
 			-- Get the allied power at the target base
 			local iAlliedPower = self.m_aEnemies[iLoop1].Base.iEnemyLocalPower + self.m_aEnemies[iLoop1].Base.iEnemyNearPower / 2
-			
+
 			-- Calculate the potential power ratio of total allied to enemy forces at the enemy base (Max 40 points)
 			iPoints = self:Evaluate(iAlliedPower + iMyArmyStrength, AttackStrategy.fBestAttackRatio * iEnemyPower, AttackStrategy.fWorstAttackRatio * iEnemyPower, 40)
-			
+
 			-- Calculate the distance of my army to the enemy base (Max 30 points)
 			local iArmyToBaseDistance = distance(vMyArmyPosition, vBasePosition)
 			iPoints = iPoints + self:Evaluate(iArmyToBaseDistance, AttackStrategy.iLocalRange, AttackStrategy.iMidRange, 30)
-			
+
 			-- Calculate the distance of my base to the enemy base (Max 30 points)
 			local iBaseToBaseDistance = cpu_manager:GetShortestPathingDistance(vMyBasePosition, vBasePosition)
 			iPoints = iPoints + self:Evaluate(iBaseToBaseDistance, AttackStrategy.iNearRange, AttackStrategy.iMidRange, 30)
-			
+
 			-- Set minimum enemy base distance
 			if (fMinEnemyBaseDist == 0 or fMinEnemyBaseDist < iBaseToBaseDistance) then
 				fMinEnemyBaseDist = iBaseToBaseDistance
 			end
-			
+
 			-- Calculate the army strength I need
 			local iRequiredStrength = math.min(AttackStrategy.fRequiredAttackRatio * iEnemyPower - iAlliedPower, AttackStrategy.iMaxArmySize - iAlliedPower)
-			
+
 			-- Check if this base is better than the previous base
 			if (tBestBase.iPoints < iPoints and
 				iAlliedPower < AttackStrategy.iMaxArmySize and
 				not self.m_aEnemies[iLoop1].bDead and
 				2 * iBaseToBaseDistance < 3 * iClosestEnemyDistance and
 				(iRequiredStrength <= iMyArmyStrength or iMyArmyStrength >= iForceAttackStrength)) then
-				
+
 				-- Set new target base
 				tBestBase.iPoints = iPoints
 				tBestBase.iEnemy = iLoop1
@@ -742,7 +741,7 @@ function AttackStrategy:ChooseTarget()
 			end
 		end
 	end
-	
+
 	-- ***** Check for an enemy listening post I can handle *****
 	local tBestListeningPost =
 	{
@@ -753,20 +752,20 @@ function AttackStrategy:ChooseTarget()
 		iNeedPower = 0
 	}
 	for iLoop1 in self.m_aEnemies do
-	
+
 		for iLoop2 in self.m_aEnemies[iLoop1].ListeningPosts.vPosition do
-		
+
 			-- Check if player is dead or too strong
 			if (self.m_aEnemies[iLoop1].bDead or 4 * iMyArmyStrength < 3 * self.m_aEnemies[iLoop1].iTotalArmyStrength) then
 				break
 			end
-		
+
 			-- Value points
 			local iPoints = 0
-			
+
 			-- Get post strength
 			local iPostStrength = cpu_manager:GetTurretPower(self.m_aEnemies[iLoop1].oPlayer:GetPlayerRaceName())
-	
+
 			-- Get the maximum enemy threat on the path to the target LP
 			local vPostPosition = self.m_aEnemies[iLoop1].ListeningPosts.vPosition[iLoop2]
 			local iEnemyPower = self.m_aEnemies[iLoop1].ListeningPosts.iAlliedLocalPower[iLoop2] + self.m_aEnemies[iLoop1].ListeningPosts.iAlliedNearPower[iLoop2] / 2
@@ -774,35 +773,35 @@ function AttackStrategy:ChooseTarget()
 				iEnemyPower = iEnemyPower + iPostStrength
 			end
 			local iEnemyPower = self:GetMaxThreatOnPath(vMyArmyPosition, vPostPosition, iEnemyPower)
-			
+
 			-- Get the allied power at the target LP plus the power of my army
 			local iAlliedPower = self.m_aEnemies[iLoop1].ListeningPosts.iEnemyLocalPower[iLoop2] + self.m_aEnemies[iLoop1].ListeningPosts.iEnemyNearPower[iLoop2] / 2
-			
+
 			-- Calculate the potential power ratio of total allied to enemy forces at the enemy LP (Max 40 points)
 			iPoints = self:Evaluate(iAlliedPower + iMyArmyStrength, AttackStrategy.fBestAttackRatio * iEnemyPower, AttackStrategy.fWorstAttackRatio * iEnemyPower, 40)
-				
+
 			-- Calculate the distance of my army to the enemy LP (Max 25 points)
 			local iArmyToPostDistance = distance(vMyArmyPosition, vPostPosition)
 			iPoints = iPoints + self:Evaluate(iArmyToPostDistance, AttackStrategy.iLocalRange, AttackStrategy.iMidRange, 25)
-				
+
 			-- Calculate the distance of my base to the enemy LP (Max 25 points)
 			local iBaseToPostDistance = cpu_manager:GetShortestPathingDistance(vMyBasePosition, vPostPosition)
 			iPoints = iPoints + self:Evaluate(iBaseToPostDistance, AttackStrategy.iNearRange, AttackStrategy.iMidRange, 25)
-			
+
 			-- Calculate the distance of the enemy base to the enemy LP (Max 10 points)
 			local vEnemyBasePosition = self.m_aEnemies[iLoop1].Base.vPosition
 			local iEnemyBaseToPostDistance = cpu_manager:GetShortestPathingDistance(vEnemyBasePosition, vPostPosition)
 			iPoints = iPoints + self:Evaluate(iEnemyBaseToPostDistance, AttackStrategy.iNearRange, AttackStrategy.iMidRange, 10)
-			
+
 			-- Calculate the army strength I need
 			local iRequiredStrength = math.min(AttackStrategy.fRequiredAttackRatio * iEnemyPower - iAlliedPower, AttackStrategy.iMaxArmySize - iAlliedPower)
-			
+
 			-- Check if this listening post is better than the previous listening post
 			if (tBestListeningPost.iPoints < iPoints and
 				iAlliedPower < AttackStrategy.iMaxArmySize and
 				2 * iBaseToPostDistance < 3 * iClosestEnemyDistance and
 				(iRequiredStrength <= iMyArmyStrength or iMyArmyStrength >= iForceAttackStrength)) then
-				
+
 				-- Set new target post
 				tBestListeningPost.iPoints = iPoints
 				tBestListeningPost.iEnemy = iLoop1
@@ -811,8 +810,8 @@ function AttackStrategy:ChooseTarget()
 				tBestListeningPost.iNeedPower = iRequiredStrength
 			end
 		end
-	end	
-	
+	end
+
 	-- Check if an allied base needs help
 	local tSupportBase =
 	{
@@ -822,44 +821,44 @@ function AttackStrategy:ChooseTarget()
 		iNeedPower = 0
 	}
 	for iLoop1 in self.m_aAllies do
-	
+
 		-- Check if I can handle enemy
 		if (not self.m_aAllies[iLoop1].bDead and self.m_aAllies[iLoop1].oPlayer:GetPlayerID() ~= cpu_manager.player_id) then
-		
+
 			-- Value points
 			local iPoints = 0
-		
+
 			-- Get the enemy power at the allied base
 			local iEnemyPower = self.m_aAllies[iLoop1].Base.iEnemyLocalPower + self.m_aAllies[iLoop1].Base.iEnemyNearPower / 2
-		
+
 			-- Get the allied power at the allied base
 			local iAlliedPower = self.m_aAllies[iLoop1].Base.iAlliedLocalPower + self.m_aAllies[iLoop1].Base.iAlliedNearPower / 2
-			
+
 			-- Calculate the potential power ratio of allied to enemy forces at the allied base (Max 40 points)
-			iPoints = self:Evaluate(iEnemyPower, AttackStrategy.fBestAttackRatio * iAlliedPower, iAlliedPower, 40) 	
-			
+			iPoints = self:Evaluate(iEnemyPower, AttackStrategy.fBestAttackRatio * iAlliedPower, iAlliedPower, 40)
+
 			-- Continue only if help is needed
 			if (iPoints > 0 and self.m_aAllies[iLoop1].oPlayer:GetPlayerID() ~= cpu_manager.player_id) then
-			
+
 				-- Calculate the distance of my army to the allied base (Max 25 points)
 				local vBasePosition = self.m_aAllies[iLoop1].Base.vPosition
 				local iArmyToBaseDistance = distance(vMyArmyPosition, vBasePosition)
 				iPoints = iPoints + self:Evaluate(iArmyToBaseDistance, AttackStrategy.iLocalRange, AttackStrategy.iMidRange, 25)
-				
+
 				-- Calculate the distance of my base to the allied base (Max 35 points)
 				local iBaseToBaseDistance = cpu_manager:GetShortestPathingDistance(vMyBasePosition, vBasePosition)
 				iPoints = iPoints + self:Evaluate(iBaseToBaseDistance, AttackStrategy.iNearRange, AttackStrategy.iMidRange, 35)
-				
+
 				-- Calculate the army strength I need
 				local iRequiredStrength = math.min(AttackStrategy.fRequiredAttackRatio * iEnemyPower - iAlliedPower, AttackStrategy.iMaxArmySize - iAlliedPower)
-			
+
 				-- Check if this base is in higher need than the previous base
 				if (tSupportBase.iPoints < iPoints and
 					iAlliedPower < AttackStrategy.iMaxArmySize and
 					not self.m_aAllies[iLoop1].bDead and
 					2 * iBaseToBaseDistance < 3 * iClosestEnemyDistance and
 					(iRequiredStrength <= iMyArmyStrength or iMyArmyStrength >= iForceAttackStrength)) then
-					
+
 					-- Set new support base target
 					tSupportBase.iPoints = iPoints
 					tSupportBase.iAlly = iLoop1
@@ -869,7 +868,7 @@ function AttackStrategy:ChooseTarget()
 			end
 		end
 	end
-	
+
 	-- Check if an allied listening post needs help
 	local tSupportListeningPost =
 	{
@@ -880,53 +879,53 @@ function AttackStrategy:ChooseTarget()
 		iNeedPower = 0
 	}
 	for iLoop1 in self.m_aAllies do
-	
+
 		for iLoop2 in self.m_aAllies[iLoop1].ListeningPosts.vPosition do
-		
+
 			-- Check if player is dead
 			if (self.m_aAllies[iLoop1].bDead or self.m_aAllies[iLoop1].oPlayer:GetPlayerID() == cpu_manager.player_id) then
 				break
 			end
-		
+
 			-- Value points
 			local iPoints = 0
-			
+
 			-- Get post strength
 			local iPostStrength = cpu_manager:GetTurretPower(self.m_aAllies[iLoop1].oPlayer:GetPlayerRaceName())
-		
+
 			-- Get the enemy power at the allied LP
 			local iEnemyPower = self.m_aAllies[iLoop1].ListeningPosts.iEnemyLocalPower[iLoop2] + self.m_aAllies[iLoop1].ListeningPosts.iEnemyNearPower[iLoop2] / 2
-		
+
 			-- Get the allied power at the allied LP
 			local iAlliedPower = self.m_aAllies[iLoop1].ListeningPosts.iAlliedLocalPower[iLoop2] + self.m_aAllies[iLoop1].ListeningPosts.iAlliedNearPower[iLoop2] / 2
 			if (self.m_aAllies[iLoop1].ListeningPosts.bFortified[iLoop2]) then
 				iAlliedPower = iAlliedPower + iPostStrength
 			end
-			
+
 			-- Calculate the potential power ratio of allied to enemy forces at the allied post (Max 40 points)
-			iPoints = self:Evaluate(iEnemyPower, AttackStrategy.fBestAttackRatio * iAlliedPower, iAlliedPower, 40) 	
-			
+			iPoints = self:Evaluate(iEnemyPower, AttackStrategy.fBestAttackRatio * iAlliedPower, iAlliedPower, 40)
+
 			-- Continue only if help is needed any my army isn't much stronger
 			if (iPoints > 0 and 3 * iEnemyPower > iMyArmyStrength) then
-			
+
 				-- Calculate the distance of my army to the allied post (Max 25 points)
 				local vPostPosition = self.m_aAllies[iLoop1].ListeningPosts.vPosition[iLoop2]
 				local iArmyToPostDistance = distance(vMyArmyPosition, vPostPosition)
 				iPoints = iPoints + self:Evaluate(iArmyToPostDistance, AttackStrategy.iLocalRange, AttackStrategy.iMidRange, 25)
-				
+
 				-- Calculate the distance of my base to the allied post (Max 35 points)
 				local iBaseToPostDistance = cpu_manager:GetShortestPathingDistance(vMyBasePosition, vPostPosition)
 				iPoints = iPoints + self:Evaluate(iBaseToPostDistance, AttackStrategy.iNearRange, AttackStrategy.iMidRange, 35)
-				
+
 				-- Calculate the army strength I need
 				local iRequiredStrength = math.min(AttackStrategy.fRequiredAttackRatio * iEnemyPower - iAlliedPower, AttackStrategy.iMaxArmySize - iAlliedPower)
-			
+
 				-- Check if this listening post is better than the previous listening post
 				if (tSupportListeningPost.iPoints < iPoints and
 					iAlliedPower < AttackStrategy.iMaxArmySize and
 					2 * iBaseToPostDistance < 3 * iClosestEnemyDistance and
 					(iRequiredStrength <= iMyArmyStrength or iMyArmyStrength >= iForceAttackStrength)) then
-					
+
 					-- Set new post support target
 					tSupportListeningPost.iPoints = iPoints
 					tSupportListeningPost.iAlly = iLoop1
@@ -937,21 +936,21 @@ function AttackStrategy:ChooseTarget()
 			end
 		end
 	end
-	
+
 	-- Modify result with racial behaviour
 	local iModifier = cpu_manager:GetAttackModifier()
 	if (iModifier < 0) then
-	
+
 		-- Bonus on support actions
 		if (tSupportBase.iAlly > 0) then
 			tSupportBase.iPoints = tSupportBase.iPoints - iModifier
 		end
 		if (tSupportListeningPost.iAlly > 0) then
 			tSupportListeningPost.iPoints = tSupportListeningPost.iPoints - iModifier
-		end		
-	
+		end
+
 	elseif (iModifier > 0) then
-	
+
 		-- Bonus on attack actions
 		if (tBestBase.iEnemy > 0) then
 			tBestBase.iPoints = tBestBase.iPoints + iModifier
@@ -965,23 +964,23 @@ function AttackStrategy:ChooseTarget()
 	local iRequiredPower = 0
 	local iPoints = 0
 	local sActionType = "Waiting..."
-	
+
 	-- Check for close enemy armies
 	local iCriticalRange = cpu_manager:GetCriticalRange()
 	local iMinThreat = cpu_manager:GetTierLevel() * 500
 	for iLoop1 in self.m_aEnemies do
-		
+
 		-- Check if enemy is alive
 		if (not self.m_aEnemies[iLoop1].bDead) then
-			
+
 			-- Check if enemy army is close to home base
 			if (distance_sqr(vMyBasePosition, self.m_aEnemies[iLoop1].vArmyPosition) < iCriticalRange) then
-				
+
 				-- Check threat
 				local iThreat, iSupport, iMySupport = cpu_manager:GetArmyStrengthAtPos(self.m_aEnemies[iLoop1].vArmyPosition, 50, true)
 				local iSituation = iThreat - iSupport + iMySupport
 				if (iThreat > iMinThreat) then
-				
+
 					-- Check if we're able to attack enemy force
 					iPoints = 200
 					if (iMyArmyStrength > iSituation) then
@@ -995,10 +994,10 @@ function AttackStrategy:ChooseTarget()
 			end
 		end
 	end
-	
+
 	-- Try to support allied base
 	if (tSupportBase.iAlly > 0 and tSupportBase.iPoints > iPoints) then
-	
+
 		-- Set target
 		iRequiredPower = tSupportBase.iNeedPower
 		iPoints = tSupportBase.iPoints
@@ -1006,10 +1005,10 @@ function AttackStrategy:ChooseTarget()
 		sActionType = "Support allied base "..tostring(self.m_aAllies[tSupportBase.iAlly].oPlayer:GetPlayerID())
 		self.m_oEnemy = cpu_manager:FindCommonEnemyPlayer()
 	end
-	
+
 	-- Try to attack enemy base
 	if (tBestBase.iEnemy > 0 and tBestBase.iPoints > iPoints) then
-	
+
 		-- Set target (Attacking an enemy base gets a bonus of 10 points in tier 2+)
 		iRequiredPower = tBestBase.iNeedPower
 		iPoints = tBestBase.iPoints
@@ -1020,10 +1019,10 @@ function AttackStrategy:ChooseTarget()
 		self.m_oEnemy = self.m_aEnemies[tBestBase.iEnemy].oPlayer
 		sActionType = "Attack enemy base "..tostring(self.m_oEnemy:GetPlayerID())
 	end
-	
+
 	-- Try to support an allied listening post
 	if (tSupportListeningPost.iAlly > 0 and tSupportListeningPost.iPoints > iPoints) then
-	
+
 		-- Set target
 		iRequiredPower = tSupportListeningPost.iNeedPower
 		iPoints = tSupportListeningPost.iPoints
@@ -1034,7 +1033,7 @@ function AttackStrategy:ChooseTarget()
 
 	-- Try to attack an enemy listening post
 	if (tBestListeningPost.iEnemy > 0 and tBestListeningPost.iPoints > iPoints) then
-	
+
 		-- Set target
 		iRequiredPower = tBestListeningPost.iNeedPower
 		iPoints = tBestListeningPost.iPoints
@@ -1042,10 +1041,10 @@ function AttackStrategy:ChooseTarget()
 		self.m_oEnemy = self.m_aEnemies[tBestListeningPost.iEnemy].oPlayer
 		sActionType = "Attack enemy listening post of player "..tostring(self.m_oEnemy:GetPlayerID())
 	end
-	
+
 	-- Create attack plan
 	if (sActionType ~= "Waiting...") then
-	
+
 		-- Set minimum amount of units
 		iRequiredPower = math.max(0, iRequiredPower)
 		local iMinArmyPower = math.max(iMinArmyPower, iRequiredPower)
@@ -1053,7 +1052,7 @@ function AttackStrategy:ChooseTarget()
 		-- Add attack plan
 		self.m_oAttackPlan = AttackPlan(self.m_oEnemy, self.m_vAttackPosition, vMyArmyPosition, iMinArmyPower, self.info.max_army_percentage)
 		self:AddPlan(self.m_oAttackPlan)
-		
+
 		-- Store time of next update
 		self.m_iNextUpdate = g_iGMT + 10
 	end
@@ -1073,16 +1072,16 @@ function AttackStrategy:GetMaxThreatOnPath(vMyArmyPos, vTargetPos, iTargetEnemyP
 	local iMinDistance = (1 + AttackStrategy.fAttackDeviation) * iDistanceToTarget
 	local iMaxDistance = (1 - AttackStrategy.fAttackDeviation) * iDistanceToTarget
 	local iMaxEnemyPower = iTargetEnemyPower
-	
+
 	-- Check for all enemies, if they've a stronger post, base or army that blocks my target
 	for iLoop1 in self.m_aEnemies do
-	
+
 		-- Check way distance through enemy army
 		local iDistance1 = distance(vMyArmyPos, self.m_aEnemies[iLoop1].vArmyPosition)
 		local iDistance2 = distance(self.m_aEnemies[iLoop1].vArmyPosition, vTargetPos)
 		local iDistance = iDistance1 + iDistance2
 		if (iDistance < iMaxDistance and iDistance > iMinDistance) then
-		
+
 			-- We now assume that we've to face at least a major part of the enemy army on our way to the target
 			iMaxEnemyPower = math.max(iMaxEnemyPower, 2 / 3 * self.m_aEnemies[iLoop1].iTotalArmyStrength)
 		end
@@ -1092,19 +1091,19 @@ function AttackStrategy:GetMaxThreatOnPath(vMyArmyPos, vTargetPos, iTargetEnemyP
 		local iDistance2 = distance(self.m_aEnemies[iLoop1].Base.vPosition, vTargetPos)
 		local iDistance = iDistance1 + iDistance2
 		if (iDistance < iMaxDistance and iDistance > iMinDistance) then
-		
+
 			-- We now assume that we've to pass this base on our way to the target
 			iMaxEnemyPower = math.max(iMaxEnemyPower, self.m_aEnemies[iLoop1].Base.iAlliedLocalPower)
 		end
-	
+
 		-- Check way distance through enemy listening posts
 		for iLoop2 in self.m_aEnemies[iLoop1].ListeningPosts.vPosition do
-		
+
 			iDistance1 = distance(vMyArmyPos, self.m_aEnemies[iLoop1].ListeningPosts.vPosition[iLoop2])
 			iDistance2 = distance(self.m_aEnemies[iLoop1].ListeningPosts.vPosition[iLoop2], vTargetPos)
 			iDistance = iDistance1 + iDistance2
 			if (iDistance < iMaxDistance and iDistance > iMinDistance) then
-		
+
 				-- We now have to assume that we've to pass this post on our way to the target
 				iMaxEnemyPower = math.max(iMaxEnemyPower, self.m_aEnemies[iLoop1].ListeningPosts.iAlliedLocalPower[iLoop2])
 			end
@@ -1117,31 +1116,31 @@ function AttackStrategy:Evaluate(iValue, iBestValue, iWorstValue, iMaxPoints)
 
 	-- Check if high or low value is good
 	if (iBestValue < iWorstValue) then
-		
+
 		-- Check best value
 		if (iValue <= iBestValue) then
 			return iMaxPoints
 		end
-		
+
 		-- Check worst value
 		if (iValue >= iWorstValue) then
 			return 0
 		end
-		
+
 		-- Calculate points
 		return iMaxPoints - iMaxPoints / (iWorstValue - iBestValue) * (iValue - iBestValue)
 	else
-	
+
 		-- Check best value
 		if (iValue >= iBestValue) then
 			return iMaxPoints
 		end
-		
+
 		-- Check worst value
 		if (iValue <= iWorstValue) then
 			return 0
 		end
-		
+
 		-- Calculate points
 		return iMaxPoints / (iBestValue - iWorstValue) * (iValue - iWorstValue)
 	end
@@ -1153,13 +1152,13 @@ function AttackStrategy:GetBestSupportPosition(vSupportPosition, iRange)
 	local oSquadFilter = function( oSquadAI )
 		return not oSquadAI:IsBroken()
 	end
-  
+
     -- Get closest enemy to support position
     local oEnemySquad = cpu_manager:FindClosestEnemy(vSupportPosition, iRange, oSquadFilter)
     if (oEnemySquad ~= nil) then
 		return Vector3f(oEnemySquad:GetPosition())
 	end
-	
+
 	-- If no valid enemy squad was found take support position
 	return vSupportPosition
 end
@@ -1176,24 +1175,24 @@ function AttackStrategy:Retreat(vRetreatPosition)
 
 		-- If no retreat position was given, then move to next friendly base
 		if (vRetreatPosition == nil) then
-		     
+
 			local vBasePos = cpu_manager:FindClosestFriendlyBaseOrStrategicPoint(self.m_vAttackPosition, cpu_manager.start_pos, true, false)
 			if (vBasePos ~= nil) then
 				vRetreatPosition = Vector3f(vBasePos)
 			end
 		end
-		   
+
 		-- Retreat all units to retreat position
 		if (vRetreatPosition ~= nil) then
-		
+
 			-- Retreat all attacking units
 			self.m_oAttackPlan:Retreat(vRetreatPosition)
 		end
 	end
-	
+
 	-- Reset attack
 	self:ResetAttack()
-	
+
 	-- Store time of next update
 	self.m_iNextUpdate = g_iGMT + 30
 
@@ -1208,24 +1207,24 @@ function AttackStrategy:AnalyseBattleField()
 	-- Reset player-info arrays
 	self.m_aAllies	= {}
 	self.m_aEnemies	= {}
-	
+
 	-- Init ally and enemy sections
 	local vMyBasePosition = Vector3f()
 	for oPlayer in cpu_manager.stats:GetPlayerStats() do
-	
+
 		-- Check if player is still alive
 		if (not oPlayer:IsPlayerDead()) then
-	
+
 			-- Create a baseinfo object
 			local oPlayerInfo = PlayerInfo(oPlayer, AttackStrategy.iLocalRange, AttackStrategy.iNearRange, AttackStrategy.iMidRange, AttackStrategy.iLongRange)
-			
+
 			-- Add baseinfo object to ally or enemy section
 			if (oPlayerInfo.bEnemy) then
 				table.insert(self.m_aEnemies, oPlayerInfo)
 			else
 				table.insert(self.m_aAllies, oPlayerInfo)
 			end
-			
+
 			-- Store main base position of current player
 			if (oPlayer:GetPlayerID() == cpu_manager.player_id) then
 				vMyBasePosition = oPlayerInfo.Base.vPosition
@@ -1235,35 +1234,35 @@ function AttackStrategy:AnalyseBattleField()
 	end
 	local iAllyCount	= table.getn(self.m_aAllies)
 	local iEnemyCount	= table.getn(self.m_aEnemies)
-	
+
 	-- Compute all allies
 	for iLoop1 = 1, iAllyCount do
-	
+
 		-- Calculate distances of allied buildings to my position
 		self.m_aAllies[iLoop1]:SetDistances(vMyBasePosition)
-	
+
 		-- Compute all allied squads
 		for oSquad in self.m_aAllies[iLoop1].oPlayer:GetSquads() do
 
 			if (oSquad:IsValid() and not oSquad:IsEngineer()) then
-				
+
 				-- Get squad position
 				local vSquadPosition = oSquad:GetPosition()
-				
+
 				-- Get squad power
 				local iSquadPower = cpu_manager:GetUnitStrength(oSquad)
-				
+
 				-- Add squad to army position
 				self.m_aAllies[iLoop1]:AddSquadToArmyPos(iSquadPower, vSquadPosition)
-				
+
 				-- Only add squad info from allied players
 				if (self.m_aAllies[iLoop1].oPlayer:GetPlayerID() ~= cpu_manager.player_id) then
-								
+
 					-- Add squad info to allied players information
 					for iLoop2 = 1, iAllyCount do
 						self.m_aAllies[iLoop2]:AddAlliedSquadInfo(iSquadPower, vSquadPosition)
 					end
-					
+
 					-- Add squad info to enemy players information
 					for iLoop2 = 1, iEnemyCount do
 						self.m_aEnemies[iLoop2]:AddEnemySquadInfo(iSquadPower, vSquadPosition)
@@ -1271,43 +1270,43 @@ function AttackStrategy:AnalyseBattleField()
 				end
 			end
 		end
-		
+
 		-- Validate army position
 		self.m_aAllies[iLoop1]:ValidateArmyPosition()
 	end
 
 	-- Compute all enemies
 	for iLoop1 = 1, iEnemyCount do
-	
+
 		-- Calculate distances of enemy buildings to my position
 		self.m_aEnemies[iLoop1]:SetDistances(vMyBasePosition)
-	
+
 		-- Compute all enemy squads
 		for oSquad in self.m_aEnemies[iLoop1].oPlayer:GetSquads() do
-								
+
 			if (oSquad:IsValid() and not oSquad:IsEngineer()) then
-				
+
 				-- Get squad position
 				local vSquadPosition = oSquad:GetPosition()
-				
+
 				-- Get squad power
 				local iSquadPower = cpu_manager:GetUnitStrength(oSquad)
-				
+
 				-- Add squad to army position
 				self.m_aEnemies[iLoop1]:AddSquadToArmyPos(iSquadPower, vSquadPosition)
-								
+
 				-- Add squad info to allied players information
 				for iLoop2 = 1, iAllyCount do
 					self.m_aAllies[iLoop2]:AddEnemySquadInfo(iSquadPower, vSquadPosition)
 				end
-				
+
 				-- Add squad info to enemy players information
 				for iLoop2 = 1, iEnemyCount do
 					self.m_aEnemies[iLoop2]:AddAlliedSquadInfo(iSquadPower, vSquadPosition)
 				end
 			end
 		end
-		
+
 		-- Validate army position
 		self.m_aEnemies[iLoop1]:ValidateArmyPosition()
 	end

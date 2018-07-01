@@ -1,0 +1,10 @@
+
+AISettings =
+{
+	iTechSpeed = 0,
+ 	bExtraHandicap = false,
+	bAlternativeStrategies = true,
+	bMultiBuildings = true,
+	bTurrets = true,
+	bMines = false,
+}
