@@ -101,13 +101,12 @@ CpuManager.StrategicTransitions =
 CpuManager.ForceTech =
 {
 	StartTier1 = 5,
-	StartTier2 = 15,
-	StartTier3 = 25
+	StartTier2 = 12,
+	StartTier3 = 20
 }
 
 CpuManager.AISettings =
 {
-	iTechSpeed = 0,
 	bExtraHandicap = false,
 	bAlternativeStrategies = true,
 	bTurrets = true,
@@ -289,36 +288,16 @@ function CpuManager:Initialize()
 	-- Check difficulty level
 	local eDifficulty = self.cpu_player:GetDifficultyLevel()
 	if (eDifficulty == CpuPlayer.AD_Insane) then
-		print("Loading Skilled AI..." )
+		print("Loading Crazy Skirmish AI..." )
 	else
 		print("THIS AI WORKING ONLY WITH INSANE Difficulty!!! If you are bad player and want to play with weak AI try to use Dawn Of Skirmish SS 3.2")
 		return false
 	end
 
-	CpuManager.AISettings.iTechSpeed = AISettings.iTechSpeed
 	CpuManager.AISettings.bExtraHandicap = AISettings.bExtraHandicap
 	CpuManager.AISettings.bAlternativeStrategies = AISettings.bAlternativeStrategies
 	CpuManager.AISettings.bTurrets = AISettings.bTurrets
 	CpuManager.AISettings.bMines = AISettings.bMines
-
-	-- Adjust force tech times
-	if (CpuManager.AISettings.iTechSpeed == -2) then
-		CpuManager.ForceTech.StartTier1 = 7
-		CpuManager.ForceTech.StartTier2 = 21
-		CpuManager.ForceTech.StartTier3 = 35
-	elseif (CpuManager.AISettings.iTechSpeed == -1) then
-		CpuManager.ForceTech.StartTier1 = 6
-		CpuManager.ForceTech.StartTier2 = 18
-		CpuManager.ForceTech.StartTier3 = 30
-	elseif (CpuManager.AISettings.iTechSpeed == 1) then
-		CpuManager.ForceTech.StartTier1 = 4
-		CpuManager.ForceTech.StartTier2 = 12
-		CpuManager.ForceTech.StartTier3 = 20
-	elseif (CpuManager.AISettings.iTechSpeed == 2) then
-		CpuManager.ForceTech.StartTier1 = 3
-		CpuManager.ForceTech.StartTier2 = 9
-		CpuManager.ForceTech.StartTier3 = 15
-	end
 
 	-- Check race name
 	local sRaceName = self.player_stats:GetPlayerRaceName()

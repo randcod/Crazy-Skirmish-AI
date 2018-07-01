@@ -125,16 +125,7 @@ function BuildBaseStrategy:__init( baseinfo ) super( baseinfo )
 		end
 	end
 
-	-- Set tech speed
-	if (CpuManager.AISettings.iTechSpeed == -2) then
-		self.info.ArmyStrengthModifier = self.info.ArmyStrengthModifier * 1.5
-	elseif (CpuManager.AISettings.iTechSpeed == -1) then
-		self.info.ArmyStrengthModifier = self.info.ArmyStrengthModifier * 1.25
-	elseif (CpuManager.AISettings.iTechSpeed == 1) then
-		self.info.ArmyStrengthModifier = self.info.ArmyStrengthModifier * 0.75
-	elseif (CpuManager.AISettings.iTechSpeed == 2) then
-		self.info.ArmyStrengthModifier = self.info.ArmyStrengthModifier * 0.5
-	end
+	-- Randomizing (idk why)
 	self.info.ArmyStrengthModifier = self.info.ArmyStrengthModifier * math.random(75, 125) / 100
 
 	-- Set tech break
@@ -142,19 +133,11 @@ function BuildBaseStrategy:__init( baseinfo ) super( baseinfo )
 	if (bAlliedWithHuman) then
 
 		-- Check for handicaps for AI's allied with a human player
-		if (CpuManager.AISettings.iHandicap == -1) then
+		if (CpuManager.AISettings.bExtraHandicap == true) then
 			self.m_iTechBreak = 2
-		elseif (CpuManager.AISettings.iHandicap == -2) then
-			self.m_iTechBreak = 4
 		end
 	else
 
-		-- Check for handicaps for AI's not allied with a human player
-		if (CpuManager.AISettings.iHandicap == 1) then
-			self.m_iTechBreak = 2
-		elseif (CpuManager.AISettings.iHandicap == 2) then
-			self.m_iTechBreak = 4
-		end
 	end
 
 	-- Workaround squad cap
