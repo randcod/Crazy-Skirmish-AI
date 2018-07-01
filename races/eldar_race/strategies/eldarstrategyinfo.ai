@@ -2,7 +2,7 @@
 -- File: 'eldarstrategyinfo.ai'
 -- Edited by Thudmeizer  @ 22.10.2008
 
-BuildBaseStrategyInfo = 
+BuildBaseStrategyInfo =
 {
 	eldar_race =
 	{
@@ -11,27 +11,27 @@ BuildBaseStrategyInfo =
 
 		-- Reserve this amount for building units, reinforcing and upgrading
 		req_reserve = 150,
-		
+
 		--need at least this at all times
 		squad_cap_threshold = 2,
 
 		--need at least this at all times
 		support_cap_threshold = 3,
-		
+
 		--used to calculate wants for engineers
 		Engineers =
 		{
 			--number of engineers we're aiming for
 			want = 2,
 		},
-		
+
 		-- Is used to modify the army strength in the build programs (Allows faster balancing adjustments)
 		ArmyStrengthModifier = 1.0,
-		
+
 		-- Item-Syntax: Min. Tier, Min. Requisition, Min. Power, Min. ArmyStrength, Object-Count, Object-Type, Object-Name
 		BuildPrograms =
 		{
-			-- Research Total: 24 (excludes 2 useless researches) 
+			-- Research Total: 24 (excludes 2 useless researches)
 			-- Allround strategy
 			{
 				{ 1, 220, 80, 0, 1,	 "Unit",	"eldar_squad_farseer" },
@@ -90,7 +90,7 @@ BuildBaseStrategyInfo =
 				{ 4, 250, 155, 3000, 100,"TurretAddon", "eldar_list_post_addon_2" },
 				{ 4, 700, 150, 4000, 2,	 "Building",	"eldar_hq" }
 			},
-			
+
 			-- Reaper strategy
 			{
 				{ 1, 0, 0, 0, 0,	 "Rush", 	"Prepare" },
@@ -124,7 +124,7 @@ BuildBaseStrategyInfo =
 				{ 2, 100, 50, 1000, 100, "Addon",	"eldar_aspect_stone_nightwing" },
 				{ 2, 50, 0, 1000, 20,	 "TurretAddon", "eldar_support_platform_addon" },
 				{ 2, 200, 40, 1000, 1,	 "Research",    "eldar_power_research_1" },
-				{ 2, 75, 250, 1500, 1,	 "Research",    "eldar_requisition_research_1" },	
+				{ 2, 75, 250, 1500, 1,	 "Research",    "eldar_requisition_research_1" },
 				{ 2, 120, 30, 1500, 100, "Addon",	"eldar_aspect_stone_warp_spider" },
 				{ 2, 75, 0, 1500, 100,	 "Addon",	"eldar_aspect_stone_vyper" },
 				{ 2, 100, 0, 1500, 4,	 "Building",	"eldar_webway_gate" },
@@ -149,7 +149,7 @@ BuildBaseStrategyInfo =
 				{ 4, 250, 155, 3000, 100,"TurretAddon", "eldar_list_post_addon_2" },
 				{ 4, 700, 150, 4000, 2,	 "Building",	"eldar_hq" }
 			},
-		
+
 			-- Banshee strategy
 			{
 				{ 1, 0, 0, 0, 0,	 "Rush", 	"Prepare" },
@@ -210,8 +210,8 @@ BuildBaseStrategyInfo =
 				{ 4, 250, 155, 3000, 100,"TurretAddon", "eldar_list_post_addon_2" },
 				{ 4, 700, 150, 4000, 2,	 "Building",	"eldar_hq" }
 			},
-			
-			-- Wraithlord / Warp Spider strategy
+
+			-- Fast t2 strategy
 			{
 				{ 1, 0, 0, 0, 1,	 "Rush", 	"Prepare" },
 				{ 1, 45, 0, 0, 3,	 "Unit",	"eldar_squad_bonesinger" },
@@ -271,10 +271,10 @@ BuildBaseStrategyInfo =
 			-- Unusable by AI : { 1, 50, 25, 8, 0, 1,		"Research", "eldar_bonesinger_ability_research_3" },
 			-- Unusable by AI : { 1, 50, 25, 8, 0, 1,		"Research", "eldar_webway_gate_relocation_research" },
 		},
-				
-		SquadLimits = 
+
+		SquadLimits =
 		{
-			standard = 
+			standard =
 			{
 				eldar_squad_bonesinger = 0,
 				eldar_guardian_squad = math.random( 2,3 ),
@@ -299,7 +299,7 @@ BuildBaseStrategyInfo =
 	},
 }
 
-BuildOrderStrategyInfo = 
+BuildOrderStrategyInfo =
 {
 	eldar_race =
 	{
@@ -315,7 +315,7 @@ BuildOrderStrategyInfo =
 			{ "building", "eldar_aspect_portal", true },
 			{ "building", "eldar_warp_generator" }
 		},
-		
+
 		QuickStart =
 		{
 			{ "flag_capture" }, { "flag_capture" },
@@ -330,7 +330,7 @@ BuildOrderStrategyInfo =
 			{ "building", "eldar_aspect_portal", true },
 			{ "building", "eldar_warp_generator" }
 		},
-		
+
 		LargeMap =
 		{
 			{ "flag_capture" }, { "flag_capture" },
@@ -346,7 +346,7 @@ BuildOrderStrategyInfo =
 	}
 }
 
-AttackStrategyInfo = 
+AttackStrategyInfo =
 {
 	eldar_race =
 	{

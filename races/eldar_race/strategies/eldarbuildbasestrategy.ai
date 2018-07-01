@@ -14,11 +14,6 @@ end
 
 function EldarBuildBaseStrategy:ChooseBuildProgram()
 
-	-- Check build program count
-	if (table.getn(self.info.BuildPrograms) ~= 4) then
-		return BuildBaseStrategy.ChooseBuildProgram(self)
-	end
-
 	-- Get map size and closest enemy distance
 	local sMapSize, iClosestEnemyDistance = self:GetMapSize()
 
@@ -26,7 +21,7 @@ function EldarBuildBaseStrategy:ChooseBuildProgram()
 	local iBuildProgram1	-- Basic strategy
 	local iBuildProgram2	-- Reaper rush
 	local iBuildProgram3	-- Banshee rush
-	local iBuildProgram4	-- Vehicle rush
+	local iBuildProgram4	-- Fast t2
 	if (sMapSize == "small" or iClosestEnemyDistance <= 70 or cpu_manager.iPlayerCount == 2) then
 
 		iBuildProgram1 = 40
