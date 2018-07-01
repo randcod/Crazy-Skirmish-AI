@@ -2,8 +2,8 @@
 -- File: 'necronstrategyinfo.ai'
 -- Edited by Thudmeizer   @ 22.10.2008
 
-BuildBaseStrategyInfo = 
-{	
+BuildBaseStrategyInfo =
+{
 	necron_race =
 	{
 		post_builder = 1,
@@ -11,13 +11,13 @@ BuildBaseStrategyInfo =
 
 		-- Reserve this amount for building units, reinforcing and upgrading
 		req_reserve = -99999,
-		
+
 		--need at least this at all times
 		squad_cap_threshold = 2,
 
 		--need at least this at all times
 		support_cap_threshold = 3,
-		
+
 		--used to calculate wants for engineers
 		Engineers =
 		{
@@ -27,7 +27,7 @@ BuildBaseStrategyInfo =
 
 		-- Is used to modify the army strength in the build programs (Allows faster balancing adjustments)
 		ArmyStrengthModifier = 1.0,
-		
+
 		-- Item-Syntax: Min. Tier, Min. Requisition, Min. Power, Min. ArmyStrength, Object-Count, Object-Type, Object-Name
 		BuildPrograms =
 		{
@@ -82,7 +82,7 @@ BuildBaseStrategyInfo =
 				{ 4, 0, 700, 4000, 3,	"Building",	"monolith" },
 				{ 4, 0, 325, 4000, 14,	"Building",	"necron_plasma_generator" }
 			},
-			
+
  			-- Necron warrior strategy
 			{
 				{ 1, 0, 0, 0, 0,	"Rush", 	"Prepare" },
@@ -133,7 +133,7 @@ BuildBaseStrategyInfo =
 				{ 4, 0, 700, 4000, 3,	"Building",	"monolith" },
 				{ 4, 0, 325, 4000, 14,	"Building",	"necron_plasma_generator" }
 			},
-			
+
  			-- Double monolith strategy
 			{
 				{ 1, 0, 150, 0, 1,	"Unit",		"necron_lord_squad" },
@@ -186,7 +186,7 @@ BuildBaseStrategyInfo =
 				{ 4, 0, 700, 4000, 3,	"Building",	"monolith" },
 				{ 4, 0, 325, 4000, 14,	"Building",	"necron_plasma_generator" }
 			},
-			
+
  			-- Fast vehicle destroyer/warrior strategy
 			{
 				{ 1, 0, 0, 0, 1,	"Rush", 	"Prepare" },
@@ -240,10 +240,10 @@ BuildBaseStrategyInfo =
 				{ 4, 0, 325, 4000, 14,	"Building",	"necron_plasma_generator" }
 			}
 		},
-		
-		SquadLimits = 
+
+		SquadLimits =
 		{
-			standard = 
+			standard =
 			{
 				necron_builder_scarab_squad = 0,
 				necron_basic_warrior_squad = 3,
@@ -266,7 +266,7 @@ BuildBaseStrategyInfo =
 	},
 }
 
-BuildOrderStrategyInfo = 
+BuildOrderStrategyInfo =
 {
 	necron_race =
 	{
@@ -284,7 +284,7 @@ BuildOrderStrategyInfo =
 			{ "flag_capture" },	{ "flag_capture" },
 			{ "post_builder" },	{ "post_builder" }
 		},
-		 
+
 		QuickStart =
 		{
 			{ "squad", "necron_builder_scarab_squad" },
@@ -296,11 +296,11 @@ BuildOrderStrategyInfo =
 			{ "building", "necron_plasma_generator", true },
 			{ "building", "necron_plasma_generator", true },
 			{ "building", "necron_plasma_generator", true },
-			{ "flag_capture" },	{ "flag_capture" }, 
+			{ "flag_capture" },	{ "flag_capture" },
 			{ "flag_capture" },
 			{ "post_builder" },	{ "post_builder" }
 		},
-		 
+
 		LargeMap =
 		{
 			{ "squad", "necron_builder_scarab_squad" },
@@ -312,14 +312,14 @@ BuildOrderStrategyInfo =
 			{ "building", "necron_plasma_generator", true },
 			{ "building", "necron_plasma_generator", true },
 			{ "building", "necron_plasma_generator", true },
-			{ "flag_capture" },	{ "flag_capture" }, 
+			{ "flag_capture" },	{ "flag_capture" },
 			{ "flag_capture" },
 			{ "post_builder" },	{ "post_builder" }
 		}
 	},
 }
 
-AttackStrategyInfo = 
+AttackStrategyInfo =
 {
 	necron_race =
 	{

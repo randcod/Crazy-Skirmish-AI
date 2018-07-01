@@ -2,7 +2,7 @@
 -- File: 'taustrategyinfo.ai'
 -- Edited by Thudmeizer    @ 07.03.2008
 
-BuildBaseStrategyInfo = 
+BuildBaseStrategyInfo =
 {
 	tau_race =
 	{
@@ -11,23 +11,23 @@ BuildBaseStrategyInfo =
 
 		-- Reserve this amount for building units, reinforcing and upgrading
 		req_reserve = 150,
-		
+
 		--need at least this at all times
 		squad_cap_threshold = 2,
 
 		--need at least this at all times
 		support_cap_threshold = 3,
-		
+
 		--used to calculate wants for engineers
 		Engineers =
 		{
 			--number of engineers we're aiming for
 			want = 2,
 		},
-		
+
 		-- Is used to modify the army strength in the build programs (Allows faster balancing adjustments)
 		ArmyStrengthModifier = 1.0,
-				
+
 		-- Item-Syntax: Min. Tier, Min. Requisition, Min. Power, Min. ArmyStrength, Object-Count, Object-Type, Object-Name
 		BuildPrograms =
 		{
@@ -155,9 +155,9 @@ BuildBaseStrategyInfo =
 				{ 4, 175, 200, 0, 1,	"Unit",		"tau_ethereal_squad" },
 				{ 4, 150, 40, 0, 1,	"Unit",		"tau_pathfinder_squad" },
 				{ 4, 250, 155, 3000, 100,"TurretAddon", "addon_tau_list_post_2" },
-				{ 4, 360, 0, 4000, 2,	"Building",	"tau_hq" }	
+				{ 4, 360, 0, 4000, 2,	"Building",	"tau_hq" }
 			},
-			
+
 			-- Fast vehicle Kauyon Strategy
 			{
 				{ 1, 0, 0, 0, 1,	"Rush", 	"Prepare" },
@@ -196,7 +196,7 @@ BuildBaseStrategyInfo =
 				{ 4, 175, 200, 0, 1,	"Unit",		"tau_ethereal_squad" },
 				{ 4, 150, 40, 0, 1,	"Unit",		"tau_pathfinder_squad" },
 				{ 4, 250, 155, 3000, 100,"TurretAddon", "addon_tau_list_post_2" },
-				{ 4, 360, 0, 4000, 2,	"Building",	"tau_hq" }		
+				{ 4, 360, 0, 4000, 2,	"Building",	"tau_hq" }
 			}
 		},
 
@@ -231,7 +231,7 @@ BuildBaseStrategyInfo =
 	},
 }
 
-BuildOrderStrategyInfo = 
+BuildOrderStrategyInfo =
 {
 	tau_race =
 	{
@@ -247,10 +247,10 @@ BuildOrderStrategyInfo =
 			{ "building", "tau_barracks", true },
 			{ "building", "tau_plasma_generator", true }
 		},
-		
+
 		QuickStart =
 		{
-			{ "flag_capture" }, { "flag_capture" }, 
+			{ "flag_capture" }, { "flag_capture" },
 			{ "flag_capture" },
 			{ "squad", "tau_stealth_team_squad" },
 			{ "squad", "tau_builder_squad" },
@@ -261,10 +261,10 @@ BuildOrderStrategyInfo =
 			{ "building", "tau_barracks", true },
 			{ "building", "tau_plasma_generator", true }
 		},
-		
+
 		LargeMap =
 		{
-			{ "flag_capture" }, { "flag_capture" }, 
+			{ "flag_capture" }, { "flag_capture" },
 			{ "flag_capture" }, { "flag_capture" },
 			{ "squad", "tau_stealth_team_squad" },
 			{ "squad", "tau_builder_squad" },
@@ -278,8 +278,8 @@ BuildOrderStrategyInfo =
 	}
 }
 
-AttackStrategyInfo = 
-{	
+AttackStrategyInfo =
+{
 	tau_race =
 	{
 		MinArmyStrength = 750,
