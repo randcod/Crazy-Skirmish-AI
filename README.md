@@ -1,7 +1,7 @@
 # Insane AI
 New AI Mod for Warhammer 40 000: Dawn of War - Soulstorm based on Dawn Of Skirmish SS.
 
-**Made for pro players! If you are a weak player DON"T use it!  
+**Made for pro players! If you are a weak player DON'T use it!  
 THIS AI WORKING ONLY AND ONLY WITH INSANE DIFFICULTY** 
 
 ### Developers of the original Skrimish AI
