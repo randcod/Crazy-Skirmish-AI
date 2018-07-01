@@ -7,20 +7,15 @@ class 'OrkBuildBaseStrategy' (BuildBaseStrategy)
 function OrkBuildBaseStrategy:__init( baseinfo ) super( baseinfo )
 
 	-- Add detector units (Best first, worst last)
+  self:AddDetectorUnit("ork_squad_mek_boy")
+  self:AddDetectorUnit("ork_squad_warboss")
 	self:AddDetectorUnit("ork_squad_armored_nob")
-	self:AddDetectorUnit("ork_squad_warboss")
-	self:AddDetectorUnit("ork_squad_mek_boy")
 
 	-- Orks MUST be able to build their banners!!!
 	CpuManager.AISettings.bTurrets = true
 end
 
 function OrkBuildBaseStrategy:ChooseBuildProgram()
-
-	-- Check build program count
-	if (table.getn(self.info.BuildPrograms) ~= 4) then
-		return BuildBaseStrategy.ChooseBuildProgram(self)
-	end
 
 	-- Get map size and closest enemy distance
 	local sMapSize, iClosestEnemyDistance = self:GetMapSize()
@@ -74,11 +69,11 @@ function OrkBuildBaseStrategy:ChooseBuildProgram()
 	if (iRandom <= iBuildProgram1) then
 		return 1
 	elseif (iRandom <= iBuildProgram2) then
-		return 2
+		return 1
 	elseif (iRandom <= iBuildProgram3) then
-		return 3
+		return 1
 	elseif (iRandom <= iBuildProgram4) then
-		return 4
+		return 1
 	end
 	return 1
 end
@@ -253,24 +248,23 @@ function OrkBuildBaseStrategy:BuildFlexible()
 		-- Compute builder research
 		self:DynamicResearch("ork_research_grot_infiltrate", 1, 50, 20, 0, 0, "ork_squad_grot", 2)
 
-		-- Compute secondary researches
-		if (iArmyStrength >= 750) then
+    if (build_manager:GetSquadCapCurrentMax() >= 30) then
+    	-- Compute armor research
+    	if (iInfantrySquads >= 2 and build_manager:GetSquadCapCurrentMax() >= 30 ) then
+    		self:DynamicResearch("ork_research_eavy_armor_boyz", 1, 75, 25, 0, 0, nil, 0)
+    	end
 
-			-- Compute infantry research
-			if (iInfantrySquads >= 3) then
-				self:DynamicResearch("ork_research_eavy_armor_boyz", 1, 75, 25, 0, 0, nil, 0)
-				self:DynamicResearch("ork_research_burna", 1, 50, 50, 0, 0, "ork_squad_slugga", 2)
-			end
-		end
+      -- Compute boosts for stormboys
+    	self:DynamicResearch("ork_research_speed_boost_stormboyz", 1, 25, 35, 0, 0, "ork_squad_stormboy", 2)
+    end
 
-		-- Compute bonus researches
-		if (iArmyStrength >= 1250) then
+    if (build_manager:GetSquadCapCurrentMax() >= 40) then
+      -- Shootas and Storms researchs
+      self:DynamicResearch("ork_research_bigshoota", 2, 100, 25, 0, 0, "ork_squad_shoota_boy", 2)
+      self:DynamicResearch("ork_research_morechoppy", 2, 100, 50, 0, 0, "ork_squad_stormboy", 0)
+    end
+    self:DynamicResearch("ork_research_moredakka", 2, 60, 20, 0, 0, "ork_squad_shoota_boy", 0)
 
-			-- Compute infantry research
-			if (iInfantrySquads >= 3) then
-				self:DynamicResearch("ork_research_speed_boost_stormboyz", 1, 25, 35, 0, 0, "ork_squad_stormboy", 2)
-			end
-		end
 	end
 
 	-- Compute tier 2 researches
@@ -282,9 +276,9 @@ function OrkBuildBaseStrategy:BuildFlexible()
 		end
 
 		-- Compute infantry research
-		if (iInfantrySquads >= 3) then
+		if (iInfantrySquads >= 4) then
 			self:DynamicResearch("ork_research_moredakka", 2, 60, 20, 0, 0, nil, 0)
-			self:DynamicResearch("ork_research_bigshoota", 2, 100, 25, 0, 0, "ork_squad_shoota_boy", 2)
+      self:DynamicResearch("ork_research_morechoppy", 2, 100, 50, 0, 0, nil, 0)
 		end
 
 		-- Compute secondary researches
@@ -297,7 +291,6 @@ function OrkBuildBaseStrategy:BuildFlexible()
 
 			-- Compute infantry research
 			if (iInfantrySquads >= 3) then
-				self:DynamicResearch("ork_research_morechoppy", 2, 100, 50, 0, 0, nil, 0)
 				self:DynamicResearch("ork_research_tank_busta_infiltrate", 2, 50, 75, 0, 0, "ork_squad_tankbusta", 1)
 			end
 		end
@@ -337,6 +330,7 @@ function OrkBuildBaseStrategy:BuildFlexible()
 			-- Compute infantry research
 			if (iInfantrySquads >= 3) then
 				self:DynamicResearch("ork_research_evenmorechoppy", 3, 150, 100, 0, 0, nil, 0)
+        self:DynamicResearch("ork_research_burna", 1, 50, 50, 0, 0, "ork_squad_slugga", 2)
 				self:DynamicResearch("ork_research_burna_2", 3, 50, 50, 0, 0, "ork_squad_slugga", 2)
 			end
 		end
@@ -465,7 +459,6 @@ function OrkBuildBaseStrategy:ModifySquadDemand(iUnitID)
 		end
 		local num_attach = self:CountSquads("ork_squad_slugga", dok_attach) +
 				   self:CountSquads("ork_squad_shoota_boy", dok_attach) +
-				   self:CountSquads("ork_squad_tankbusta", dok_attach) +
 				   self:CountSquads("ork_squad_nob", dok_attach) +
 				   self:CountSquads("ork_flash_gitz_squad", dok_attach)
 

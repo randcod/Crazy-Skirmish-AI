@@ -29,8 +29,8 @@ UnitStrengths.ork_squad_bad_dok = 100
 UnitStrengths.ork_squad_slugga = 30
 UnitStrengths.ork_squad_shoota_boy = 35
 UnitStrengths.ork_squad_stormboy = 40
-UnitStrengths.ork_squad_tankbusta = 60
 UnitStrengths.ork_squad_nob = 65
+UnitStrengths.ork_squad_tankbusta = 70
 UnitStrengths.ork_squad_armored_nob = 145
 UnitStrengths.ork_flash_gitz_squad = 80
 UnitStrengths.ork_squad_mek_boy = 250
@@ -49,7 +49,6 @@ LeaderStrengths.ork_squad_nob = 75
 
 Attachments.ork_squad_slugga = { "ork_squad_bad_dok", "ork_squad_mek_boy", "ork_squad_warboss" }
 Attachments.ork_squad_shoota_boy = { "ork_squad_bad_dok", "ork_squad_mek_boy", "ork_squad_warboss" }
-Attachments.ork_squad_tankbusta = { "ork_squad_bad_dok", "ork_squad_mek_boy", "ork_squad_warboss" }
 Attachments.ork_squad_nob = { "ork_squad_bad_dok", "ork_squad_mek_boy", "ork_squad_warboss" }
 Attachments.ork_flash_gitz_squad = { "ork_squad_bad_dok", "ork_squad_mek_boy", "ork_squad_warboss" }
 
